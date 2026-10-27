@@ -1,4 +1,4 @@
-# 小笔杆 · 小学作文智能批改（GitHub Pages 版）
+# 笔知评 · 小学作文智能批改（GitHub Pages 版）
 
 面向小学一至六年级的作文批改网页应用。调用 DeepSeek 接口，一次生成 **五维评分、教师评语、错别字改正、句子升级、优秀段落赏析、结构建议和原文批注**。
 
@@ -81,7 +81,7 @@ git push
 打开仓库的 **Actions** 标签，等待：
 
 ```text
-Deploy 小笔杆 to GitHub Pages
+Deploy 笔知评 to GitHub Pages
 ```
 
 执行完成。
