@@ -1051,6 +1051,22 @@ svg {
   line-height: 1.85;
 }
 
+.empty-key-hint {
+  display: inline-block;
+  margin-top: 13px !important;
+  padding: 5px 12px;
+  border: 1px dashed #d8c7a8;
+  border-radius: 999px;
+  background: rgba(251, 244, 227, 0.8);
+  color: #7b6a51 !important;
+  font-size: 10px !important;
+  line-height: 1.6 !important;
+}
+
+.empty-key-hint b {
+  color: var(--orange-deep);
+}
+
 .empty-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2334,7 +2350,7 @@ svg {
   font-size: 0.92em;
 }
 
-.server-status {
+.static-status {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -2344,7 +2360,7 @@ svg {
   background: var(--card-soft);
 }
 
-.server-status-icon {
+.static-status-icon {
   display: grid;
   place-items: center;
   width: 19px;
@@ -2358,27 +2374,27 @@ svg {
   font-weight: 800;
 }
 
-.server-status.is-ready {
+.static-status.is-ready {
   border-color: #cadfd0;
   background: var(--green-tint);
 }
 
-.server-status.is-ready .server-status-icon {
+.static-status.is-ready .static-status-icon {
   background: var(--green);
   color: #fff;
 }
 
-.server-status > div {
+.static-status > div {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.server-status strong {
+.static-status strong {
   font-size: 11.5px;
 }
 
-.server-status span {
+.static-status span {
   color: var(--ink-faint);
   font-size: 9.5px;
   line-height: 1.55;
@@ -2434,42 +2450,31 @@ svg {
   line-height: 1.65;
 }
 
-.env-help {
-  margin-top: 15px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--line);
+.key-help-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
 }
 
-.env-help summary {
-  color: var(--ink-soft);
-  font-size: 10.5px;
-  font-weight: 600;
-  cursor: pointer;
+.key-help-row .key-hint {
+  flex: 1;
 }
 
-.env-help pre {
-  margin: 9px 0 6px;
-  padding: 10px 12px;
-  overflow-x: auto;
-  border-radius: 8px;
-  background: #26372f;
-  color: #e9e2d2;
-  font-family: "Cascadia Code", Consolas, monospace;
-  font-size: 10px;
-  line-height: 1.7;
-}
-
-.env-help pre code {
-  padding: 0;
-  background: transparent;
-  color: inherit;
-  font-size: inherit;
-}
-
-.env-help p {
-  margin: 0;
-  color: var(--ink-faint);
+.key-link {
+  flex: 0 0 auto;
+  margin-top: 7px;
+  color: var(--green);
   font-size: 9px;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(47, 107, 80, 0.35);
+  white-space: nowrap;
+}
+
+.key-link:hover {
+  color: var(--green-deep);
+  border-bottom-color: var(--green-deep);
 }
 
 .modal-actions {
@@ -2932,6 +2937,15 @@ svg {
 
   .modal h2 {
     font-size: 24px;
+  }
+
+  .key-help-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .key-link {
+    margin-top: 4px;
   }
 
   .modal-actions {

@@ -22,9 +22,9 @@
         </span>
       </a>
       <div class="top-actions">
-        <button class="status-pill is-loading" id="statusBtn" type="button" title="查看 DeepSeek 连接设置">
+        <button class="status-pill is-missing" id="statusBtn" type="button" title="查看 DeepSeek 连接设置">
           <span class="status-dot" aria-hidden="true"></span>
-          <span id="statusText">正在检查连接</span>
+          <span id="statusText">待配置 Key</span>
         </button>
         <button class="btn btn-ghost btn-settings" id="settingsBtn" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
@@ -37,7 +37,7 @@
   <main class="page">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>写给 1—6 年级的作文课堂</p>
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>写给 1—6 年级的作文课堂 · 纯静态版</p>
         <h1><span class="hero-phrase">好作文，</span><span class="hero-phrase">是<span class="brush">改</span>出来的。</span></h1>
         <p class="hero-sub">把小学生的作文交给小笔杆，几分钟内收获一份完整、温和、能落地的批改报告。</p>
         <div class="feature-chips" aria-label="批改内容">
@@ -122,7 +122,7 @@
           <div class="submit-row">
             <p class="privacy-note">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-              <span id="privacyNoteText">作文仅用于本次 AI 批改，不在服务器留存。</span>
+              <span id="privacyNoteText">Key 只存本机；作文直接发送给 DeepSeek。</span>
             </p>
             <button class="btn btn-primary btn-grade" id="gradeBtn" type="submit">
               <span>开始智能批改</span>
@@ -161,6 +161,7 @@
           <div class="empty-copy">
             <h3>一篇作文，四处收获。</h3>
             <p>粘贴作文、选择年级，小笔杆会像一位耐心的语文老师，读完再开口。</p>
+            <p class="empty-key-hint">首次使用：点击右上角 <b>设置</b>，填入自己的 DeepSeek API Key。</p>
           </div>
 
           <div class="empty-features">
@@ -368,33 +369,29 @@
       <button class="modal-close" id="modalCloseBtn" type="button" aria-label="关闭设置">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
-      <p class="panel-kicker">DeepSeek 连接</p>
-      <h2 id="settingsTitle">配置 API Key</h2>
-      <p class="modal-desc" id="modalDesc">小笔杆通过 DeepSeek 官方接口批改作文。你可以把 Key 写在服务端 <code>.env</code> 中，也可以只放在当前浏览器标签页里。</p>
+      <p class="panel-kicker">GitHub Pages 静态版</p>
+      <h2 id="settingsTitle">配置 DeepSeek API Key</h2>
+      <p class="modal-desc">本页面没有后端，由浏览器直接调用 DeepSeek。请填写你自己的 API Key，它只会留在本机。</p>
 
-      <div class="server-status" id="serverStatusCard">
-        <span class="server-status-icon" aria-hidden="true">·</span>
-        <div><strong id="serverStatusTitle">正在检查服务端配置</strong><span id="serverStatusText">请稍候…</span></div>
+      <div class="static-status" id="staticStatusCard">
+        <span class="static-status-icon" aria-hidden="true">·</span>
+        <div><strong id="staticStatusTitle">GitHub Pages 静态版</strong><span id="staticStatusText">请填写你自己的 DeepSeek API Key；它只保存在本机浏览器。</span></div>
       </div>
 
       <label class="key-field" for="apiKeyInput">
-        <span class="field-label">临时 API Key <small>可选</small></span>
+        <span class="field-label">DeepSeek API Key</span>
         <span class="key-input-wrap">
           <input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-...">
           <button class="key-toggle" id="keyToggleBtn" type="button" aria-label="显示或隐藏 API Key">显示</button>
         </span>
       </label>
-      <p class="key-hint" id="keyHint">只保存在本标签页的 <code>sessionStorage</code>，关闭标签页即清除；请求时直接发送给本机服务，不写入服务器日志。</p>
-
-      <details class="env-help" id="envHelp">
-        <summary>想长期使用？写入 .env</summary>
-        <pre><code>DEEPSEEK_API_KEY=sk-你的密钥
-DEEPSEEK_MODEL=deepseek-chat</code></pre>
-        <p>保存后重启服务即可。服务端配置的 Key 不会显示在网页里。</p>
-      </details>
+      <div class="key-help-row">
+        <p class="key-hint" id="keyHint">只保存在本标签页的 <code>sessionStorage</code>，关闭标签页即清除；请求由浏览器直接发送给 DeepSeek。</p>
+        <a class="key-link" href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer">获取 API Key ↗</a>
+      </div>
 
       <div class="modal-actions">
-        <button class="btn btn-outline" id="clearKeyBtn" type="button">清除临时 Key</button>
+        <button class="btn btn-outline" id="clearKeyBtn" type="button">清除 Key</button>
         <button class="btn btn-primary" id="saveKeyBtn" type="button">保存并使用</button>
       </div>
     </div>

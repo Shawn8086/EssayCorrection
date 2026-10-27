@@ -10,9 +10,6 @@ const KEY_STORAGE = 'xiaobigan_temp_key_v1';
 const MAX_CHARS = 6000;
 const MIN_CHARS = 20;
 
-const RUNTIME_CONFIG = window.XBG_CONFIG && typeof window.XBG_CONFIG === 'object' ? window.XBG_CONFIG : {};
-const API_BASE = String(RUNTIME_CONFIG.apiBase || '').replace(/\/+$/, '');
-
 const STAGE_HINTS = [
   '先通读全文，理解孩子想表达什么。',
   '对照年级标准，看看内容、结构和语言。',
@@ -39,19 +36,11 @@ const SAMPLE = {
 };
 
 const state = {
-  config: null,
-  configError: false,
-  directMode: false,
   apiKey: readSessionKey(),
   report: null,
-  reportEssay: '',
-  reportSubmission: null,
   controller: null,
-  gotResult: false,
-  lastSubmission: null,
   stageTimer: null,
   stageIndex: 0,
-  loadingStartedAt: 0,
   draftTimer: null,
   draftStatusTimer: null,
   toastTimer: null,
@@ -72,11 +61,7 @@ async function init() {
   restoreDraft();
   updateCharCount();
   updateConnectionStatus();
-
-  await loadConfig();
-  updateConnectionStatus();
   updateServerCard();
-  updateRuntimeUi();
 }
 
 function populateSelects() {
@@ -136,165 +121,35 @@ function bindEvents() {
 /* Config + status                                                    */
 /* ------------------------------------------------------------------ */
 
-async function loadConfig() {
-  try {
-    const response = await fetch(`${API_BASE}/api/config`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('config failed');
-    const data = await response.json();
-    state.config = data;
-    state.configError = false;
-    state.directMode = false;
-
-    if (Array.isArray(data.grades) && data.grades.length) {
-      const current = $('#gradeSelect').value;
-      $('#gradeSelect').innerHTML = data.grades.map((grade) => `<option value="${grade}">${grade}</option>`).join('');
-      $('#gradeSelect').value = data.grades.includes(current) ? current : data.grades[data.grades.length - 1];
-    }
-    if (Array.isArray(data.genres) && data.genres.length) {
-      const current = $('#genreSelect').value;
-      $('#genreSelect').innerHTML = data.genres.map((genre) => `<option value="${genre}">${genre}</option>`).join('');
-      $('#genreSelect').value = data.genres.includes(current) ? current : data.genres[0];
-    }
-  } catch {
-    if (RUNTIME_CONFIG.directFallback !== false && window.XBGDirect?.isAvailable) {
-      state.directMode = true;
-      state.configError = false;
-      state.config = {
-        configured: false,
-        direct: true,
-        model: String(RUNTIME_CONFIG.model || 'deepseek-chat'),
-        maxChars: MAX_CHARS,
-        minChars: MIN_CHARS,
-        grades: GRADES,
-        genres: GENRES
-      };
-    } else {
-      state.config = null;
-      state.configError = true;
-    }
-  }
-}
-
-function updateRuntimeUi() {
-  const direct = state.directMode;
-  const modalDesc = $('#modalDesc');
-  const keyHint = $('#keyHint');
-  const envHelp = $('#envHelp');
-  const privacyNote = $('#privacyNoteText');
-
-  if (direct) {
-    if (modalDesc) {
-      modalDesc.innerHTML =
-        '当前是静态部署模式：页面没有后端，由浏览器直接调用 DeepSeek。请填写你自己的 API Key，它只会留在本机。';
-    }
-    if (keyHint) {
-      keyHint.innerHTML =
-        '只保存在本标签页的 <code>sessionStorage</code>，并由浏览器直接发送给 DeepSeek；不经过本页面服务器，也不会写入本页面的服务器日志。';
-    }
-    if (envHelp) envHelp.hidden = true;
-    if (privacyNote) privacyNote.textContent = 'Key 只存本机；作文直接发送给 DeepSeek 用于本次批改。';
-  } else {
-    if (modalDesc) {
-      modalDesc.innerHTML =
-        '小笔杆通过 DeepSeek 官方接口批改作文。你可以把 Key 写在服务端 <code>.env</code> 中，也可以只放在当前浏览器标签页里。';
-    }
-    if (keyHint) {
-      keyHint.innerHTML =
-        '只保存在本标签页的 <code>sessionStorage</code>，关闭标签页即清除；请求时发送给本机服务，不写入服务器日志。';
-    }
-    if (envHelp) envHelp.hidden = false;
-    if (privacyNote) privacyNote.textContent = '作文仅用于本次 AI 批改，不在服务器留存。';
-  }
-}
-
 function updateConnectionStatus() {
   const button = $('#statusBtn');
   const label = $('#statusText');
   button.classList.remove('is-ready', 'is-missing', 'is-error', 'is-loading');
 
-  if (state.configError) {
-    button.classList.add('is-error');
-    label.textContent = '服务未连接';
-    button.title = '无法读取服务配置，请确认服务已启动';
-    button.setAttribute('aria-label', 'DeepSeek 状态：服务未连接，点击查看设置');
-    return;
-  }
-
-  if (state.config === null) {
-    button.classList.add('is-loading');
-    label.textContent = '正在检查连接';
-    button.setAttribute('aria-label', 'DeepSeek 状态：正在检查连接');
-    return;
-  }
-
-  const hasServerKey = Boolean(state.config.configured);
-  const hasTempKey = Boolean(state.apiKey);
-
-  if (state.directMode) {
-    if (hasTempKey) {
-      button.classList.add('is-ready');
-      label.textContent = '浏览器直连已就绪';
-      button.title = '正在使用本标签页的 Key 直连 DeepSeek';
-      button.setAttribute('aria-label', 'DeepSeek 状态：浏览器直连已就绪，点击查看设置');
-    } else {
-      button.classList.add('is-missing');
-      label.textContent = '待配置 Key';
-      button.title = '静态站点需要你自己的 DeepSeek API Key';
-      button.setAttribute('aria-label', 'DeepSeek 状态：待配置 Key，点击填写');
-    }
-    return;
-  }
-
-  if (hasServerKey || hasTempKey) {
+  if (state.apiKey) {
     button.classList.add('is-ready');
-    label.textContent = hasServerKey ? 'DeepSeek 已连接' : '临时 Key 已就绪';
-    button.title = hasServerKey ? '服务端已配置 DeepSeek Key' : '正在使用本标签页的临时 Key';
-    button.setAttribute('aria-label', `DeepSeek 状态：${label.textContent}，点击查看设置`);
+    label.textContent = '浏览器直连已就绪';
+    button.title = '正在使用本标签页的 Key 直连 DeepSeek';
+    button.setAttribute('aria-label', 'DeepSeek 状态：浏览器直连已就绪，点击查看设置');
   } else {
     button.classList.add('is-missing');
     label.textContent = '待配置 Key';
-    button.title = '点击填写 DeepSeek API Key';
+    button.title = 'GitHub Pages 静态版需要你自己的 DeepSeek API Key';
     button.setAttribute('aria-label', 'DeepSeek 状态：待配置 Key，点击填写');
   }
 }
 
 function updateServerCard() {
-  const card = $('#serverStatusCard');
-  const title = $('#serverStatusTitle');
-  const text = $('#serverStatusText');
+  const card = $('#staticStatusCard');
+  const title = $('#staticStatusTitle');
+  const text = $('#staticStatusText');
   if (!card || !title || !text) return;
 
-  card.classList.remove('is-ready');
-
-  if (state.configError) {
-    title.textContent = '无法连接批改服务';
-    text.textContent = '请确认后端已启动，以及 runtime-config.js 中的 apiBase 填写正确。';
-    return;
-  }
-
-  if (state.config === null) {
-    title.textContent = '正在检查服务配置';
-    text.textContent = '请稍候…';
-    return;
-  }
-
-  if (state.directMode) {
-    card.classList.toggle('is-ready', Boolean(state.apiKey));
-    title.textContent = '静态部署 · 浏览器直连';
-    text.textContent = state.apiKey
-      ? 'Key 只保存在本机，批改请求直接发送给 DeepSeek。'
-      : '请填写你自己的 DeepSeek API Key；它只保存在本机浏览器。';
-    return;
-  }
-
-  if (state.config.configured) {
-    card.classList.add('is-ready');
-    title.textContent = '服务端 Key 已配置';
-    text.textContent = '可以直接批改；在下方填写临时 Key 可临时覆盖。';
-  } else {
-    title.textContent = '服务端尚未配置 Key';
-    text.textContent = '填写下方临时 Key，或写入 .env 后重启服务。';
-  }
+  card.classList.toggle('is-ready', Boolean(state.apiKey));
+  title.textContent = 'GitHub Pages 静态版';
+  text.textContent = state.apiKey
+    ? 'Key 只保存在本机，批改请求由浏览器直接发送给 DeepSeek。'
+    : '请填写你自己的 DeepSeek API Key；它只保存在本机浏览器。';
 }
 
 /* ------------------------------------------------------------------ */
@@ -467,9 +322,8 @@ async function handleSubmit(event) {
     return;
   }
 
-  const hasKey = Boolean(state.apiKey) || Boolean(state.config?.configured);
-  if (state.config && !hasKey) {
-    showToast('请先配置 DeepSeek API Key', true);
+  if (!state.apiKey) {
+    showToast('请先配置你自己的 DeepSeek API Key', true);
     openSettings();
     return;
   }
@@ -488,11 +342,7 @@ async function handleSubmit(event) {
   setBusy(true);
 
   try {
-    if (state.directMode) {
-      await gradeDirect(submission);
-    } else {
-      await gradeViaServer(submission);
-    }
+    await gradeDirect(submission);
   } catch (error) {
     handleGradeFailure(error);
   } finally {
@@ -524,47 +374,6 @@ async function gradeDirect(submission) {
   finishWithReport(report, submission);
 }
 
-async function gradeViaServer(submission) {
-  const response = await fetch(`${API_BASE}/api/grade`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(state.apiKey ? { 'X-DeepSeek-Key': state.apiKey } : {})
-    },
-    body: JSON.stringify(submission),
-    signal: state.controller.signal
-  });
-
-  const contentType = response.headers.get('content-type') || '';
-
-  if (!response.ok) {
-    let payload = {};
-    try {
-      payload = await response.json();
-    } catch {
-      /* ignore */
-    }
-    throw new AppError(
-      payload.error || `批改请求失败（HTTP ${response.status}）`,
-      payload.code || 'HTTP_ERROR'
-    );
-  }
-
-  if (!contentType.includes('text/event-stream')) {
-    const payload = await response.json();
-    if (payload?.score && payload?.meta) {
-      finishWithReport(payload, submission);
-      return;
-    }
-    throw new AppError('服务器返回了无法识别的结果，请重试。', 'BAD_RESPONSE');
-  }
-
-  await consumeSSE(response, submission);
-  if (!state.gotResult) {
-    throw new AppError('连接提前结束了，请再试一次。', 'STREAM_ENDED');
-  }
-}
-
 function handleGradeFailure(error) {
   if (error?.name === 'AbortError') {
     showError('批改已取消，作文还在，随时可以再试一次。', {
@@ -583,91 +392,15 @@ function handleGradeFailure(error) {
   }
 }
 
-async function consumeSSE(response, submission) {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  const separator = /\r?\n\r?\n/;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    let match;
-    while ((match = separator.exec(buffer))) {
-      const block = buffer.slice(0, match.index);
-      buffer = buffer.slice(match.index + match[0].length);
-      if (handleSSEBlock(block, submission)) return;
-    }
-  }
-
-  buffer += decoder.decode();
-  if (buffer.trim()) handleSSEBlock(buffer, submission);
-}
-
-function handleSSEBlock(block, submission) {
-  let eventName = 'message';
-  const dataLines = [];
-
-  for (const line of block.split(/\r?\n/)) {
-    if (!line || line.startsWith(':')) continue;
-    if (line.startsWith('event:')) eventName = line.slice(6).trim();
-    else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart());
-  }
-
-  if (!dataLines.length) return false;
-
-  let payload;
-  try {
-    payload = JSON.parse(dataLines.join('\n'));
-  } catch {
-    return false;
-  }
-
-  if (eventName === 'stage') {
-    if (payload.stage === 'organizing') {
-      setLoadingStage(3);
-    } else {
-      setLoadingHint('AI 正在认真读这篇作文…');
-    }
-    return false;
-  }
-
-  if (eventName === 'progress') {
-    const chars = Number(payload.chars) || 0;
-    $('#progressText').textContent = `已生成 ${chars.toLocaleString('zh-CN')} 字批改内容`;
-    if (chars > 1400 && state.stageIndex < 3) setLoadingStage(3);
-    return false;
-  }
-
-  if (eventName === 'error') {
-    throw new AppError(payload.error || '批改没有完成，请重试。', payload.code || 'GRADE_ERROR');
-  }
-
-  if (eventName === 'result') {
-    state.gotResult = true;
-    finishWithReport(payload, submission);
-    return true;
-  }
-
-  return false;
-}
-
 function finishWithReport(report, submission) {
   state.report = report;
-  state.reportEssay = submission.essay;
-  state.reportSubmission = submission;
   renderReport(report, submission);
   showReport();
 }
 
 function startLoading(submission) {
-  state.lastSubmission = submission;
-  state.gotResult = false;
   state.report = null;
   state.stageIndex = 0;
-  state.loadingStartedAt = Date.now();
   $('#emptyState').hidden = true;
   $('#errorState').hidden = true;
   $('#report').hidden = true;
@@ -700,10 +433,6 @@ function setLoadingStage(index) {
     item.classList.toggle('is-active', itemIndex === state.stageIndex);
   });
   $('#loadingHint').textContent = STAGE_HINTS[state.stageIndex] || STAGE_HINTS[0];
-}
-
-function setLoadingHint(text) {
-  $('#loadingHint').textContent = text;
 }
 
 function cleanupLoading() {
@@ -1136,14 +865,12 @@ function openSettings(message) {
   $('#apiKeyInput').value = state.apiKey || '';
   $('#apiKeyInput').type = 'password';
   $('#keyToggleBtn').textContent = '显示';
-  updateRuntimeUi();
   updateServerCard();
 
   if (message) showToast(message, true);
 
   setTimeout(() => {
-    const target = state.config?.configured ? $('#modalCloseBtn') : $('#apiKeyInput');
-    target?.focus();
+    $('#apiKeyInput').focus();
   }, 50);
 }
 
@@ -1176,13 +903,7 @@ function saveKey() {
   updateConnectionStatus();
   updateServerCard();
   closeSettings();
-  showToast(
-    key
-      ? state.directMode
-        ? 'Key 已保存，可以开始直连批改'
-        : '临时 Key 已保存，可以开始批改'
-      : '临时 Key 已清除'
-  );
+  showToast(key ? 'Key 已保存，可以开始批改' : 'Key 已清除');
 }
 
 function clearKey() {
