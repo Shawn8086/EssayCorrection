@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="小笔杆：面向小学一至六年级的作文智能批改。五维评分、温度评语、错别字改正、佳段赏析，一次完成。">
+  <meta name="theme-color" content="#f7f1e4">
+  <title>小笔杆 · 小学作文智能批改</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-texture" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./" aria-label="小笔杆首页">
+        <span class="brand-seal" aria-hidden="true">笔</span>
+        <span class="brand-type">
+          <strong>小笔杆</strong>
+          <small>小学作文智能批改</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <button class="status-pill is-loading" id="statusBtn" type="button" title="查看 DeepSeek 连接设置">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">正在检查连接</span>
+        </button>
+        <button class="btn btn-ghost btn-settings" id="settingsBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>
+          设置
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>写给 1—6 年级的作文课堂</p>
+        <h1><span class="hero-phrase">好作文，</span><span class="hero-phrase">是<span class="brush">改</span>出来的。</span></h1>
+        <p class="hero-sub">把小学生的作文交给小笔杆，几分钟内收获一份完整、温和、能落地的批改报告。</p>
+        <div class="feature-chips" aria-label="批改内容">
+          <span><i aria-hidden="true">✓</i> 五维评分</span>
+          <span><i aria-hidden="true">✓</i> 教师评语</span>
+          <span><i aria-hidden="true">✓</i> 错别字改正</span>
+          <span><i aria-hidden="true">✓</i> 优秀段落赏析</span>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="一次批改包含的内容">
+        <div class="hero-card-head">
+          <span>一次批改，四份收获</span>
+          <small>约 30 秒</small>
+        </div>
+        <ol class="hero-list">
+          <li><b>01</b><span><strong>看见分数，也看见原因</strong><em>内容、结构、语言、字词、创意</em></span></li>
+          <li><b>02</b><span><strong>读到具体、有温度的评语</strong><em>先肯定，再给可执行建议</em></span></li>
+          <li><b>03</b><span><strong>改掉文中的错字与病句</strong><em>逐条对照原文，不凭空挑错</em></span></li>
+          <li><b>04</b><span><strong>留住属于孩子的精彩</strong><em>摘出佳段，说明好在哪里</em></span></li>
+        </ol>
+      </aside>
+    </section>
+
+    <div class="workspace">
+      <section class="panel composer" aria-labelledby="composerTitle">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">01 / 交作文</p>
+            <h2 id="composerTitle">把作文放在这里</h2>
+          </div>
+          <span class="panel-badge">支持 20—6000 字</span>
+        </div>
+
+        <form id="essayForm" novalidate>
+          <div class="field-grid">
+            <label class="field field-wide" for="titleInput">
+              <span class="field-label">作文题目 <small>选填</small></span>
+              <input id="titleInput" name="title" type="text" maxlength="60" autocomplete="off" placeholder="例如：雨中的那把伞">
+            </label>
+            <label class="field" for="gradeSelect">
+              <span class="field-label">年级</span>
+              <select id="gradeSelect" name="grade"></select>
+            </label>
+            <label class="field" for="genreSelect">
+              <span class="field-label">文体</span>
+              <select id="genreSelect" name="genre"></select>
+            </label>
+          </div>
+
+          <div class="essay-head">
+            <label for="essayInput">作文正文</label>
+            <span class="char-count" id="charCount"><b>0</b> / 6000 字</span>
+          </div>
+          <div class="essay-box">
+            <textarea id="essayInput" name="essay" required maxlength="6000" spellcheck="false" placeholder="在这里粘贴或输入孩子的作文。&#10;&#10;可以保留自然段和标点，批改会更准确。"></textarea>
+            <div class="essay-box-foot">
+              <span class="draft-status" id="draftStatus">草稿自动保存在本机</span>
+              <span class="shortcut">Ctrl + Enter 批改</span>
+            </div>
+          </div>
+
+          <details class="extra-field">
+            <summary>补充老师要求 <small>选填</small></summary>
+            <textarea id="requirementsInput" maxlength="300" placeholder="例如：要求写一次难忘的经历，不少于 500 字，用上环境描写。"></textarea>
+          </details>
+
+          <div class="composer-tools">
+            <div class="tool-group">
+              <button class="link-btn" id="sampleBtn" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8Z"/></svg>
+                填入示例
+              </button>
+              <label class="link-btn" for="fileInput">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                导入 txt
+              </label>
+              <input id="fileInput" type="file" accept=".txt,text/plain" hidden>
+            </div>
+            <button class="link-btn danger" id="clearBtn" type="button">清空</button>
+          </div>
+
+          <div class="submit-row">
+            <p class="privacy-note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              <span id="privacyNoteText">作文仅用于本次 AI 批改，不在服务器留存。</span>
+            </p>
+            <button class="btn btn-primary btn-grade" id="gradeBtn" type="submit">
+              <span>开始智能批改</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel result-panel" id="resultPanel" aria-labelledby="resultTitle">
+        <div class="result-head">
+          <div>
+            <p class="panel-kicker">02 / 批改台</p>
+            <h2 id="resultTitle">批改报告</h2>
+          </div>
+          <span class="report-state" id="reportState" aria-live="polite">等待提交</span>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-visual" aria-hidden="true">
+            <div class="sheet sheet-back"></div>
+            <div class="sheet sheet-front">
+              <div class="sheet-head"><span>作文批改单</span><span>No. 001</span></div>
+              <div class="sheet-line w-72"></div>
+              <div class="sheet-line w-90"></div>
+              <div class="sheet-line w-84"></div>
+              <div class="sheet-line w-58"></div>
+              <div class="sheet-score"><strong>?</strong><small>待批</small></div>
+              <div class="sheet-stamp">评</div>
+            </div>
+            <span class="float-note note-a">评分</span>
+            <span class="float-note note-b">佳段</span>
+            <span class="float-note note-c">错字</span>
+          </div>
+
+          <div class="empty-copy">
+            <h3>一篇作文，四处收获。</h3>
+            <p>粘贴作文、选择年级，小笔杆会像一位耐心的语文老师，读完再开口。</p>
+          </div>
+
+          <div class="empty-features">
+            <div><b>五维评分</b><span>不只看总分，更看每一分从哪来</span></div>
+            <div><b>有温度的评语</b><span>先找闪光点，再给可执行建议</span></div>
+            <div><b>错字与病句</b><span>逐条对照原文，改得明明白白</span></div>
+            <div><b>佳段赏析</b><span>让孩子看见自己写得多好</span></div>
+          </div>
+
+          <div class="rubric-strip" aria-label="评分维度与分值">
+            <span>内容立意 <b>30</b></span>
+            <span>结构条理 <b>20</b></span>
+            <span>语言表达 <b>30</b></span>
+            <span>字词标点 <b>10</b></span>
+            <span>创意亮点 <b>10</b></span>
+          </div>
+        </div>
+
+        <div class="loading-state" id="loadingState" hidden>
+          <div class="scan-paper" aria-hidden="true">
+            <div class="scan-line"></div>
+            <span class="scan-word">读</span>
+          </div>
+          <h3>正在读这篇作文<span class="thinking-dots" aria-hidden="true"><i></i><i></i><i></i></span></h3>
+          <p class="loading-hint" id="loadingHint" aria-live="polite">先通读全文，理解孩子想表达什么。</p>
+          <ol class="loading-steps" id="loadingSteps">
+            <li data-step="0"><i></i><span>通读全文，抓住中心</span></li>
+            <li data-step="1"><i></i><span>对照年级标准，逐维评分</span></li>
+            <li data-step="2"><i></i><span>查找错别字、病句与标点问题</span></li>
+            <li data-step="3"><i></i><span>摘出精彩段落，写下评语</span></li>
+          </ol>
+          <div class="progress-track"><span id="progressBar"></span></div>
+          <div class="loading-foot">
+            <span id="progressText">AI 正在工作，请稍候</span>
+            <button class="link-btn" id="cancelBtn" type="button">取消</button>
+          </div>
+        </div>
+
+        <div class="error-state" id="errorState" hidden>
+          <div class="error-mark" aria-hidden="true">!</div>
+          <h3 id="errorTitle">这次没有批改成功</h3>
+          <p id="errorMessage"></p>
+          <div class="error-actions">
+            <button class="btn btn-primary" id="retryBtn" type="button">再试一次</button>
+            <button class="btn btn-outline" id="errorSettingsBtn" type="button">检查设置</button>
+          </div>
+        </div>
+
+        <article class="report" id="report" hidden>
+          <div class="print-only print-head">
+            <span class="print-brand">小笔杆 · 小学作文智能批改</span>
+            <span id="printDate"></span>
+          </div>
+
+          <div class="report-toolbar">
+            <span class="done-tag"><i aria-hidden="true">✓</i> AI 批改完成</span>
+            <div class="report-actions">
+              <button class="mini-btn" id="printBtn" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5"/><rect x="4" y="8" width="16" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+                打印 / PDF
+              </button>
+              <button class="mini-btn" id="copyBtn" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+                复制评语
+              </button>
+              <button class="mini-btn" id="reviseBtn" type="button">返回修改</button>
+            </div>
+          </div>
+
+          <div class="score-hero" id="scoreHero">
+            <div class="score-ring" id="scoreRing" style="--score:0">
+              <div class="score-ring-inner">
+                <strong id="scoreTotal">0</strong>
+                <span>总分 / 100</span>
+              </div>
+            </div>
+            <div class="score-copy">
+              <div class="score-tags">
+                <span class="level-pill" id="scoreLevel">良好</span>
+                <span class="score-meta" id="reportMeta"></span>
+              </div>
+              <h3 id="scoreHeadline"></h3>
+              <p id="scoreRubric"></p>
+            </div>
+            <span class="score-seal" aria-hidden="true">评</span>
+          </div>
+
+          <nav class="report-tabs" role="tablist" aria-label="批改报告栏目">
+            <button class="tab-btn is-active" id="tab-overview" type="button" role="tab" aria-selected="true" aria-controls="panel-overview" data-tab="overview">批改总览</button>
+            <button class="tab-btn" id="tab-language" type="button" role="tab" aria-selected="false" aria-controls="panel-language" data-tab="language">字词诊断 <span class="tab-count" id="languageCount">0</span></button>
+            <button class="tab-btn" id="tab-excellent" type="button" role="tab" aria-selected="false" aria-controls="panel-excellent" data-tab="excellent">佳段赏析 <span class="tab-count" id="excellentCount">0</span></button>
+            <button class="tab-btn" id="tab-annotated" type="button" role="tab" aria-selected="false" aria-controls="panel-annotated" data-tab="annotated">原文批注</button>
+          </nav>
+
+          <div class="tab-panels">
+            <section class="tab-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">01</span>
+                  <div><h4>老师总评</h4><p>先看见闪光点，再说下一步</p></div>
+                </div>
+                <div class="praise-card">
+                  <span class="quote-mark" aria-hidden="true">“</span>
+                  <p id="praiseText"></p>
+                </div>
+                <p class="overall-text" id="overallText"></p>
+              </div>
+
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">02</span>
+                  <div><h4>五维评分</h4><p>每一分，都有来处</p></div>
+                </div>
+                <div class="dimensions" id="dimensionsList"></div>
+              </div>
+
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">03</span>
+                  <div><h4>三个小建议</h4><p>不贪多，一次改一处</p></div>
+                </div>
+                <div class="advice-grid" id="adviceList"></div>
+              </div>
+
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">04</span>
+                  <div><h4>下次写作行动清单</h4><p>把建议变成动笔时的小动作</p></div>
+                </div>
+                <ul class="next-list" id="nextStepsList"></ul>
+              </div>
+
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">05</span>
+                  <div><h4>篇章结构</h4><p>看见文章的骨架</p></div>
+                </div>
+                <div class="structure-card">
+                  <p id="structureOutline"></p>
+                  <ul id="structureSuggestions"></ul>
+                </div>
+              </div>
+
+              <div class="teacher-note">
+                <span>写给孩子的话</span>
+                <p id="teacherNote"></p>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="panel-language" role="tabpanel" aria-labelledby="tab-language" data-panel="language" hidden>
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">01</span>
+                  <div><h4>错别字与标点</h4><p>只改文中真实存在的问题</p></div>
+                </div>
+                <div id="typoList" class="typo-list"></div>
+              </div>
+
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">02</span>
+                  <div><h4>句子升级</h4><p>轻轻一改，画面就出来了</p></div>
+                </div>
+                <div id="sentenceList" class="sentence-list"></div>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="panel-excellent" role="tabpanel" aria-labelledby="tab-excellent" data-panel="excellent" hidden>
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">01</span>
+                  <div><h4>值得被看见的佳段</h4><p>这些地方，孩子写得真好</p></div>
+                </div>
+                <div id="excellentList" class="excellent-list"></div>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="panel-annotated" role="tabpanel" aria-labelledby="tab-annotated" data-panel="annotated" hidden>
+              <div class="section-block">
+                <div class="section-head">
+                  <span class="section-num">01</span>
+                  <div><h4>原文批注</h4><p>在原文里找到每一处修改</p></div>
+                </div>
+                <div class="annotated-stats" id="annotatedStats"></div>
+                <div class="annotated-paper" id="annotatedPaper"></div>
+                <div class="annotation-legend">
+                  <span><i class="legend-typo"></i> 错字 / 用词</span>
+                  <span><i class="legend-good"></i> 精彩佳段</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <footer class="report-footer">
+            <p>本报告由 DeepSeek 辅助生成，评分与建议供教学参考，请老师或家长结合孩子实际斟酌使用。</p>
+            <span id="reportModel"></span>
+          </footer>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="settingsModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <button class="modal-close" id="modalCloseBtn" type="button" aria-label="关闭设置">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+      <p class="panel-kicker">DeepSeek 连接</p>
+      <h2 id="settingsTitle">配置 API Key</h2>
+      <p class="modal-desc" id="modalDesc">小笔杆通过 DeepSeek 官方接口批改作文。你可以把 Key 写在服务端 <code>.env</code> 中，也可以只放在当前浏览器标签页里。</p>
+
+      <div class="server-status" id="serverStatusCard">
+        <span class="server-status-icon" aria-hidden="true">·</span>
+        <div><strong id="serverStatusTitle">正在检查服务端配置</strong><span id="serverStatusText">请稍候…</span></div>
+      </div>
+
+      <label class="key-field" for="apiKeyInput">
+        <span class="field-label">临时 API Key <small>可选</small></span>
+        <span class="key-input-wrap">
+          <input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-...">
+          <button class="key-toggle" id="keyToggleBtn" type="button" aria-label="显示或隐藏 API Key">显示</button>
+        </span>
+      </label>
+      <p class="key-hint" id="keyHint">只保存在本标签页的 <code>sessionStorage</code>，关闭标签页即清除；请求时直接发送给本机服务，不写入服务器日志。</p>
+
+      <details class="env-help" id="envHelp">
+        <summary>想长期使用？写入 .env</summary>
+        <pre><code>DEEPSEEK_API_KEY=sk-你的密钥
+DEEPSEEK_MODEL=deepseek-chat</code></pre>
+        <p>保存后重启服务即可。服务端配置的 Key 不会显示在网页里。</p>
+      </details>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="clearKeyBtn" type="button">清除临时 Key</button>
+        <button class="btn btn-primary" id="saveKeyBtn" type="button">保存并使用</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>
+    <div class="noscript">小笔杆需要 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
+  </noscript>
+
+  <script src="./runtime-config.js"></script>
+  <script src="./direct-grader.js" defer></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>

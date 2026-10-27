@@ -1,0 +1,9 @@
+.env
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+screenshots/
+.tmp/
+.edge-profile/
+.edge-cdp-profile/

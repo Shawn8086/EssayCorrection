@@ -1,0 +1,15 @@
+{
+  "name": "xiaobigan-essay-coach",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小笔杆 · 小学作文智能批改（DeepSeek API）",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "check": "node --check server.mjs && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
